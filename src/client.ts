@@ -1,11 +1,7 @@
 import { stripTrailingSlash } from './lib/helpers'
+import codes from './lib/codes'
 import { GraphQLClient } from 'graphql-request'
-import { RequestDocument, Variables, ClientError, GenericObject } from './lib/types'
-
-const status = {
-    SUCCESS: 200,
-    INTERNAL_SERVER_ERROR: 500,
-}
+import { RequestDocument, Variables, ClientError } from './lib/types'
 
 export default class SpecGraphClient extends GraphQLClient {
     constructor(url?: string) {
@@ -16,7 +12,8 @@ export default class SpecGraphClient extends GraphQLClient {
         super(graphUrl)
     }
 
-    takeAuthHeaders(headers: GenericObject) {
+    takeAuthHeaders(event: { [key: string]: any }) {
+        const headers = event.headers ?? event
         this.setHeader('apikey', headers['apikey'] || headers['Apikey'])
         this.setHeader('Authorization', headers['authorization'] || headers['Authorization'])
     }
@@ -31,13 +28,13 @@ export default class SpecGraphClient extends GraphQLClient {
     }> {
         try {
             const data = await this.request(document, variables)
-            return { data, error: null, status: status.SUCCESS }
+            return { data, error: null, status: codes.SUCCESS }
         } catch (error) {
             if ((error as ClientError).response) {
                 const { status, message } = (error as ClientError).response
                 return { data: null, error: message, status }
             }
-            return { data: null, error: error as string, status: status.INTERNAL_SERVER_ERROR }
+            return { data: null, error: error as string, status: codes.INTERNAL_SERVER_ERROR }
         }
     }
 
