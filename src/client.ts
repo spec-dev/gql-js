@@ -14,8 +14,7 @@ export default class SpecGraphClient extends GraphQLClient {
         }
     ) {
         url = url || process.env.SPEC_URL
-        if (!url)
-            throw 'URL to use couldn\'t be determined...was the "SPEC_URL" env var not set?'
+        if (!url) throw 'URL to use couldn\'t be determined...was the "SPEC_URL" env var not set?'
         url = stripTrailingSlash(url)
         const settings = { ...DEFAULT_OPTIONS, ...options }
         const graphUrl = settings.appendUrlSpecGraphPath ? `${url}/graph/v1` : url
