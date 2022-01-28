@@ -1,13 +1,11 @@
 import { stripTrailingSlash } from './lib/helpers'
 import codes from './lib/codes'
-import { GraphQLClient } from 'graphql-request'
-import { RequestDocument, Variables, ClientError } from './lib/types'
+import { GraphQLClient, RequestDocument, Variables, ClientError } from 'graphql-request'
 
 export default class SpecGraphClient extends GraphQLClient {
     constructor(url?: string) {
         const baseUrl = url || process.env.SPEC_URL
         if (!baseUrl) throw 'SPEC_URL environment variable not set.'
-
         const graphUrl = `${stripTrailingSlash(baseUrl)}/graph/v1`
         super(graphUrl)
     }
@@ -28,13 +26,13 @@ export default class SpecGraphClient extends GraphQLClient {
     }> {
         try {
             const data = await this.request(document, variables)
-            return { data, error: null, status: codes.SUCCESS }
+            return { data, status: codes.SUCCESS, error: null }
         } catch (error) {
             if ((error as ClientError).response) {
                 const { status, message } = (error as ClientError).response
-                return { data: null, error: message, status }
+                return { data: null, status, error: message }
             }
-            return { data: null, error: error as string, status: codes.INTERNAL_SERVER_ERROR }
+            return { data: null, status: codes.INTERNAL_SERVER_ERROR, error: error as string }
         }
     }
 

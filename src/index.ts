@@ -1,6 +1,6 @@
 import SpecGraphClient from './client'
-import { gql } from 'graphql-request'
+export * from 'graphql-request'
 
 const graph = new SpecGraphClient()
 
-export { graph, SpecGraphClient, gql }
+export { graph, SpecGraphClient }

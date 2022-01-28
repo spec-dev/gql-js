@@ -1,7 +1,7 @@
 {
     "name": "@spec/gql",
     "version": "0.0.1",
-    "description": "Lightweight Spec GraphQL client",
+    "description": "Lightweight Spec GraphQL Client",
     "keywords": [
         "javascript",
         "typescript",
