@@ -2,11 +2,23 @@ import { stripTrailingSlash } from './lib/helpers'
 import codes from './lib/codes'
 import { GraphQLClient, RequestDocument, Variables, ClientError } from 'graphql-request'
 
+const DEFAULT_OPTIONS = {
+    appendUrlSpecGraphPath: true,
+}
+
 export default class SpecGraphClient extends GraphQLClient {
-    constructor(url?: string) {
-        const baseUrl = url || process.env.SPEC_URL
-        if (!baseUrl) throw 'SPEC_URL environment variable not set.'
-        const graphUrl = `${stripTrailingSlash(baseUrl)}/graph/v1`
+    constructor(
+        url?: string,
+        options?: {
+            appendUrlSpecGraphPath?: boolean
+        }
+    ) {
+        url = url || process.env.SPEC_URL
+        if (!url)
+            throw 'URL to use couldn\'t be determined...was the "SPEC_URL" env var not set?'
+        url = stripTrailingSlash(url)
+        const settings = { ...DEFAULT_OPTIONS, ...options }
+        const graphUrl = settings.appendUrlSpecGraphPath ? `${url}/graph/v1` : url
         super(graphUrl)
     }
 
