@@ -3,7 +3,6 @@ import codes from './lib/codes'
 import { GraphQLClient, RequestDocument, Variables, ClientError } from 'graphql-request'
 
 export default class SpecGraphClient extends GraphQLClient {
-
     constructor(specUrl: string, specKey: string) {
         if (!specUrl) throw new Error('specUrl is required.')
         if (!specKey) throw new Error('specKey is required.')
