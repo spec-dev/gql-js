@@ -2,28 +2,18 @@ import { stripTrailingSlash } from './lib/helpers'
 import codes from './lib/codes'
 import { GraphQLClient, RequestDocument, Variables, ClientError } from 'graphql-request'
 
-const DEFAULT_OPTIONS = {
-    appendUrlSpecGraphPath: true,
-}
-
 export default class SpecGraphClient extends GraphQLClient {
-    constructor(
-        url?: string,
-        options?: {
-            appendUrlSpecGraphPath?: boolean
-        }
-    ) {
-        url = url || process.env.SPEC_URL
-        if (!url) throw 'URL to use couldn\'t be determined...was the "SPEC_URL" env var not set?'
-        url = stripTrailingSlash(url)
-        const settings = { ...DEFAULT_OPTIONS, ...options }
-        const graphUrl = settings.appendUrlSpecGraphPath ? `${url}/graph/v1` : url
-        super(graphUrl)
+
+    constructor(specUrl: string, specKey: string) {
+        if (!specUrl) throw new Error('specUrl is required.')
+        if (!specKey) throw new Error('specKey is required.')
+
+        super(`${stripTrailingSlash(specUrl)}/graph/v1`)
+
+        this.setHeader('apikey', specKey)
     }
 
-    takeAuthHeaders(event: { [key: string]: any }) {
-        const headers = event.headers ?? event
-        this.setHeader('apikey', headers['apikey'] || headers['Apikey'])
+    takeAuthHeader(headers: { [key: string]: any }) {
         this.setHeader('Authorization', headers['authorization'] || headers['Authorization'])
     }
 
@@ -52,6 +42,7 @@ export default class SpecGraphClient extends GraphQLClient {
         variables?: V
     ): Promise<{
         data: T | null
+        status: number
         error: string | null
     }> {
         return await this.query(document, variables)
