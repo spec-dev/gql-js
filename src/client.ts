@@ -1,5 +1,6 @@
-import { stripTrailingSlash } from './lib/helpers'
+import { stripTrailingSlash, firstOr } from './lib/helpers'
 import codes from './lib/codes'
+import { ApiError } from './lib/types'
 import { GraphQLClient, RequestDocument, Variables, ClientError } from 'graphql-request'
 
 export default class SpecGraphClient extends GraphQLClient {
@@ -12,7 +13,7 @@ export default class SpecGraphClient extends GraphQLClient {
         this.setHeader('apikey', specKey)
     }
 
-    takeAuthHeader(headers: { [key: string]: any }) {
+    useAuthHeader(headers: { [key: string]: any }) {
         this.setHeader('Authorization', headers['authorization'] || headers['Authorization'])
     }
 
@@ -21,18 +22,18 @@ export default class SpecGraphClient extends GraphQLClient {
         variables?: V
     ): Promise<{
         data: T | null
-        status: number
-        error: string | null
+        error: ApiError | null
     }> {
         try {
             const data = await this.request(document, variables)
-            return { data, status: codes.SUCCESS, error: null }
+            return { data, error: null }
         } catch (error) {
             if ((error as ClientError).response) {
-                const { status, message } = (error as ClientError).response
-                return { data: null, status, error: message }
+                const { status, errors = [] } = (error as ClientError).response
+                const message = firstOr(errors, {}).message || ''
+                return { data: null, error: this._formatError(message, status) }
             }
-            return { data: null, status: codes.INTERNAL_SERVER_ERROR, error: error as string }
+            return { data: null, error: this._formatError(error as string) }
         }
     }
 
@@ -41,9 +42,15 @@ export default class SpecGraphClient extends GraphQLClient {
         variables?: V
     ): Promise<{
         data: T | null
-        status: number
-        error: string | null
+        error: ApiError | null
     }> {
         return await this.query(document, variables)
+    }
+
+    private _formatError(message: string, status?: number): ApiError {
+        return {
+            message,
+            status: status || codes.INTERNAL_SERVER_ERROR,
+        }
     }
 }
